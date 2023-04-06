@@ -5,7 +5,7 @@
 [Sprawozdanie](https://www.overleaf.com/read/cdhzszwgnfqz)
 
 ### TODO
-- [ ] opis modelu w przestrzeni stanu
+- [x] opis modelu w przestrzeni stanu
 - [x] opoznienia w transmitancjach (tout i fcin)
 - [x] dopisac okres probkowania
 - [x] porownac dzialanie transmitancji z rownaniami stanu
