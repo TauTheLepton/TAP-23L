@@ -133,17 +133,23 @@ legend('y12', 'u12', 'stpt12')
 % 
 % end
 
-% %% Odsprzeganie
-% Gz22 = Gz(2,2);
-% Gz22.InputDelay = 0;
-% Gz22.OutputDelay = 0;
-% % D21 = -Gz(2,1)/Gz(2,2)
-% Gz(2,2)
-% D21 = -Gz(2,1) / Gz22;
-% D21.InputDelay = 0;
-% D21.OutputDelay = 0
-% 
-% zera = roots(D21.Numerator{1})
-% zera = zero(D21)
-% bieguny = roots(D21.Denominator{1})
-% bieguny = pole(D21)
+%% Odsprzeganie
+Gz22 = Gz(2,2);
+Gz22.InputDelay = 0;
+Gz22.OutputDelay = 0;
+Gz(2,2)
+D21 = -Gz(2,1) / Gz22;
+D21.InputDelay = 0;
+D21.OutputDelay = 0;
+D21
+
+zera21 = zero(D21)
+bieguny21 = pole(D21)
+
+D12 = -Gz(1,2) / Gz(1,1)
+
+zera12 = zero(D12)
+bieguny12 = pole(D12)
+
+[num,den] = tfdata(Gz(2,2))
+[z,p,k] = tf2zpk(num{1},den{1})
