@@ -60,30 +60,23 @@ rga_dysk = RGA(kz)
 pid_y2u1 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 pid_y1u2 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 
-t = 0:Tp:Tp*200;
+t = 0:Tp:Tp*300;
 t = t';
-u21 = zeros(size(t));
-u12 = zeros(size(t));
 len = size(t);
 len = len(1);
-
-% [y,tout,x] = lsim(model_lin_dysk(2,1),u,t);
+u = zeros(len,2);
 
 % reTune(obj, K, Ti, Kd, Td)
 pid_y2u1.reTune(0.2, 100, 0, 0);
 pid_y1u2.reTune(0.2, 100, 0, 0);
 
-delay = 12;
-
-stpt21 = ones(size(t))*17;
-stpt21(1:10) = 0;
-stpt12 = ones(size(t))*17;
-stpt12(1:10) = 0;
+stpt = zeros(len,2);
+stpt(20:end,1) = 10;
+stpt(40:end,2) = 5;
 
 lazy_start = 2;  % potrzebne do ustawienia wyjść procesu potrzebnych do PIDa
 
-y21 = lsim(Gz(2,1), u21(1:lazy_start), t(1:lazy_start));
-y12 = lsim(Gz(1,2), u12(1:lazy_start), t(1:lazy_start));
+y = lsim(Gz, u(1:lazy_start,:), t(1:lazy_start));
 
 for i = lazy_start+1:len
 %     u0 = pid_y2u1.calc(y(end), stpt)
@@ -93,26 +86,27 @@ for i = lazy_start+1:len
 %     y = [y; y_new(end)];
 
     % jestesmy w czasie 'i-1'
-    u21(i) = pid_y2u1.calc(y21(end), stpt21(i));
-    u12(i) = pid_y1u2.calc(y12(end), stpt12(i));
+    u(i,1) = pid_y2u1.calc(y(end,2), stpt(i,2));
+    u(i,2) = pid_y1u2.calc(y(end,1), stpt(i,1));
     % jestesmy w czasie 'i'
-    y21 = lsim(Gz(2,1), u21(1:i), t(1:i));
-    y12 = lsim(Gz(1,2), u12(1:i), t(1:i));
+    y = lsim(Gz, u(1:i,:), t(1:i));
 end
 
 figure;
 subplot(211)
 hold on
-stairs(t,y21)
-stairs(t,u21)
-stairs(t,stpt21)
-legend('y21', 'u21', 'stpt21')
+% stairs(t,y21)
+stairs(t,y(:,2))
+stairs(t,u(:,1))
+stairs(t,stpt(:,2))
+legend('y2', 'u1', 'stpt2')
 subplot(212)
 hold on
-stairs(t,y12)
-stairs(t,u12)
-stairs(t,stpt12)
-legend('y12', 'u12', 'stpt12')
+% stairs(t,y12)
+stairs(t,y(:,1))
+stairs(t,u(:,2))
+stairs(t,stpt(:,1))
+legend('y1', 'u2', 'stpt1')
 
 
 % [y_new(end),~,~] = lsim(model_lin_dysk(1,1),u(end),t_new(end),x(end,:));
