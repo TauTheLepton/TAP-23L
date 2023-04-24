@@ -52,51 +52,67 @@ Gz = gz(Gs,Tp);
 ks = tfLimit(Gs,2,2,0)
 kz = tfLimit(Gz,2,2,1)
 
-RGA(ks)
-RGA(kz)
+rga_ciag = RGA(ks)
+rga_dysk = RGA(kz)
 
 %% PID bez odsprzegania
 % classPID(K, Ti, Kd, Td, Tp, Hlim, Llim, Dir, AutoMan, ManVal) 
-pid_y2u1 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0)
-pid_y1u2 = classPID(0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
+pid_y2u1 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
+pid_y1u2 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 
-t = [0; Tp];
-u = zeros(size(t));
+t = 0:Tp:Tp*200;
+t = t';
+u21 = zeros(size(t));
+u12 = zeros(size(t));
+len = size(t);
+len = len(1);
 
-[y,tout,x] = lsim(model_lin_dysk(2,1),u,t);
-figure;
-hold on;
-stairs(t,u);
-stairs(tout,y);
+% [y,tout,x] = lsim(model_lin_dysk(2,1),u,t);
 
 % reTune(obj, K, Ti, Kd, Td)
-pid_y2u1.reTune(1, 30, 0.5, 30);
+pid_y2u1.reTune(0.2, 100, 0, 0);
+pid_y1u2.reTune(0.2, 100, 0, 0);
 
 delay = 12;
 
-stpt = 17;
+stpt21 = ones(size(t))*17;
+stpt21(1:10) = 0;
+stpt12 = ones(size(t))*17;
+stpt12(1:10) = 0;
 
-y = lsim(Gz(2,1), u, t);
+lazy_start = 2;  % potrzebne do ustawienia wyjść procesu potrzebnych do PIDa
 
-for i = 1:200
+y21 = lsim(Gz(2,1), u21(1:lazy_start), t(1:lazy_start));
+y12 = lsim(Gz(1,2), u12(1:lazy_start), t(1:lazy_start));
+
+for i = lazy_start+1:len
 %     u0 = pid_y2u1.calc(y(end), stpt)
 %     u = [u; u0];
 %     t = [t; t(end)+Tp];
 %     [y_new,tout,x] = lsim(model_lin_dysk(2,1), u(end-1-delay:end-delay), t(end-1:end), x(end,:));
 %     y = [y; y_new(end)];
 
-    u0 = pid_y2u1.calc(y(end), stpt);
-    u = [u; u0];
-    t = [t; t(end)+Tp];
-    y = lsim(Gz(2,1), u, t);
+    % jestesmy w czasie 'i-1'
+    u21(i) = pid_y2u1.calc(y21(end), stpt21(i));
+    u12(i) = pid_y1u2.calc(y12(end), stpt12(i));
+    % jestesmy w czasie 'i'
+    y21 = lsim(Gz(2,1), u21(1:i), t(1:i));
+    y12 = lsim(Gz(1,2), u12(1:i), t(1:i));
 end
 
-y = lsim(Gz(2,1), u, t);
-
 figure;
+subplot(211)
 hold on
-plot(t,y)
-plot(t,u)
+stairs(t,y21)
+stairs(t,u21)
+stairs(t,stpt21)
+legend('y21', 'u21', 'stpt21')
+subplot(212)
+hold on
+stairs(t,y12)
+stairs(t,u12)
+stairs(t,stpt12)
+legend('y12', 'u12', 'stpt12')
 
 
 % [y_new(end),~,~] = lsim(model_lin_dysk(1,1),u(end),t_new(end),x(end,:));
