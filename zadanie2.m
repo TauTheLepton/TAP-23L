@@ -60,17 +60,10 @@ RGA(kz)
 pid_y2u1 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0)
 pid_y1u2 = classPID(0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
 
-mv = zeros(tk,1);
-cv = zeros(tk,1);
-stpt = 2137;
-
-t = Tp:Tp:tk/10;
-t = t';
-len = size(t);
-len = len(1);
+t = [0; Tp];
 u = zeros(size(t));
 
-[y,tout,x] = lsim(model_lin_dysk(1,1),u,t);
+[y,tout,x] = lsim(model_lin_dysk(2,1),u,t);
 figure;
 hold on;
 stairs(t,u);
@@ -79,17 +72,32 @@ stairs(tout,y);
 % reTune(obj, K, Ti, Kd, Td)
 pid_y2u1.reTune(1, 30, 0.5, 30);
 
+delay = 12;
+
 stpt = 17;
 
+y = lsim(Gz(2,1), u, t);
+
 for i = 1:200
-    u0 = pid_y2u1.calc(y(end), stpt)
+%     u0 = pid_y2u1.calc(y(end), stpt)
+%     u = [u; u0];
+%     t = [t; t(end)+Tp];
+%     [y_new,tout,x] = lsim(model_lin_dysk(2,1), u(end-1-delay:end-delay), t(end-1:end), x(end,:));
+%     y = [y; y_new(end)];
+
+    u0 = pid_y2u1.calc(y(end), stpt);
     u = [u; u0];
     t = [t; t(end)+Tp];
-    [y_new,tout,x] = lsim(model_lin_dysk(1,1), u(end-1:end), t(end-1:end), x(end,:));
-    y = [y; y_new(end)];
+    y = lsim(Gz(2,1), u, t);
 end
+
+y = lsim(Gz(2,1), u, t);
+
 figure;
+hold on
 plot(t,y)
+plot(t,u)
+
 
 % [y_new(end),~,~] = lsim(model_lin_dysk(1,1),u(end),t_new(end),x(end,:));
 % [y_new(end),~,~] = lsim(sys                ,u,t_new(end),x(end,:),t_new(end));
