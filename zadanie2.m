@@ -95,14 +95,13 @@ end
 figure;
 subplot(211)
 hold on
-% stairs(t,y21)
 stairs(t,y(:,2))
 stairs(t,u(:,1))
 stairs(t,stpt(:,2))
 legend('y2', 'u1', 'stpt2')
+
 subplot(212)
 hold on
-% stairs(t,y12)
 stairs(t,y(:,1))
 stairs(t,u(:,2))
 stairs(t,stpt(:,1))
@@ -128,22 +127,69 @@ legend('y1', 'u2', 'stpt1')
 % end
 
 %% Odsprzeganie
+% D12 tutaj to w notatkach D22
+% D21 tutaj to w notatkach D11
 Gz22 = Gz(2,2);
 Gz22.InputDelay = 0;
 Gz22.OutputDelay = 0;
 Gz(2,2)
 D21 = -Gz(2,1) / Gz22;
+% trzeba wyzerować opóźnienia, bo z dzielenia wyżej by wyszło
+% przyspieszenie, co jest nierealizowalne, więc trzeba odrzucić
 D21.InputDelay = 0;
 D21.OutputDelay = 0;
-D21
-
-zera21 = zero(D21)
-bieguny21 = pole(D21)
+D21 = stabilizeTf(D21)
+% pole(D21)
+% zero(D21)
 
 D12 = -Gz(1,2) / Gz(1,1)
+D12 = stabilizeTf(D12)
+% pole(D12)
+% zero(D12)
 
-zera12 = zero(D12)
-bieguny12 = pole(D12)
+% classPID(K, Ti, Kd, Td, Tp, Hlim, Llim, Dir, AutoMan, ManVal) 
+pid_y2u1 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
+pid_y1u2 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 
-[num,den] = tfdata(Gz(2,2))
-[z,p,k] = tf2zpk(num{1},den{1})
+t = 0:Tp:Tp*300;
+t = t';
+len = size(t);
+len = len(1);
+u = zeros(len,2);
+
+% reTune(obj, K, Ti, Kd, Td)
+pid_y2u1.reTune(0.2, 100, 0, 0);
+pid_y1u2.reTune(0.2, 100, 0, 0);
+
+stpt = zeros(len,2);
+stpt(20:end,1) = 10;
+stpt(40:end,2) = 5;
+
+lazy_start = 2;  % potrzebne do ustawienia wyjść procesu potrzebnych do PIDa
+
+y = lsim(Gz, u(1:lazy_start,:), t(1:lazy_start));
+
+for i = lazy_start+1:len
+    % jestesmy w czasie 'i-1'
+    ur(i,1) = pid_y2u1.calc(y(end,2), stpt(i,2));
+    ur(i,2) = pid_y1u2.calc(y(end,1), stpt(i,1));
+    u1 = lsim(D12, ur(1:i,2), t(1:i)) + ur(1:i,1);
+    u2 = lsim(D21, ur(1:i,1), t(1:i)) + ur(1:i,2);
+    % jestesmy w czasie 'i'
+    y = lsim(Gz, [u1, u2], t(1:i));
+end
+
+figure;
+subplot(211)
+hold on
+stairs(t,y(:,2))
+stairs(t,u1)
+stairs(t,stpt(:,2))
+legend('y2', 'u1', 'stpt2')
+
+subplot(212)
+hold on
+stairs(t,y(:,1))
+stairs(t,u2)
+stairs(t,stpt(:,1))
+legend('y1', 'u2', 'stpt1')
