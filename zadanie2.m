@@ -70,6 +70,9 @@ u = zeros(len,2);
 pid_y2u1.reTune(0.2, 100, 0, 0);
 pid_y1u2.reTune(0.2, 100, 0, 0);
 
+pid_y2u1.reTune(0.1, 120, 0, 50);
+pid_y1u2.reTune(1.5, 400, 0, 100); % niezle
+
 stpt = zeros(len,2);
 stpt(20:end,1) = 10;
 stpt(40:end,2) = 5;
@@ -158,8 +161,8 @@ len = len(1);
 u = zeros(len,2);
 
 % reTune(obj, K, Ti, Kd, Td)
-pid_y2u1.reTune(0.2, 100, 0, 0);
-pid_y1u2.reTune(0.2, 100, 0, 0);
+pid_y2u1.reTune(0.5, 500, 0, 0.5);
+pid_y1u2.reTune(5, 400, 0, 10); % niezle
 
 stpt = zeros(len,2);
 stpt(20:end,1) = 10;
