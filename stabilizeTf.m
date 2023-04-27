@@ -12,7 +12,7 @@ Tp = G.Ts;
 up = p(abs(p) >= 1);
 z = [z; up];
 
-minzp = min([z;p]) / 10;
+minzp = min([z;p]) / 10;  % zamiast z (2s+1) => (0.2s+1) robie (z-2) => (z-0.2)
 
 while len(z) > len(p)
     p = [p; minzp];

@@ -14,6 +14,8 @@ close all;
 
 fig_position = [10,10,800,800];
 
+SAVE_FIG = false;
+
 %% parametry zbiornika
 global c alpha
 c = 0.4;
@@ -95,20 +97,39 @@ for i = lazy_start+1:len
     y = lsim(Gz, u(1:i,:), t(1:i));
 end
 
-figure;
+figure('Position', fig_position);
 subplot(211)
+xlabel('t [s]')
+ylabel('F_H [cm^3/s]')
 hold on
-stairs(t,y(:,2))
-stairs(t,u(:,1))
-stairs(t,stpt(:,2))
-legend('y2', 'u1', 'stpt2')
+stairs(t,u(:,1)+F_h)
+legend('Wartość sterowania','Location','southeast')
 
 subplot(212)
 hold on
-stairs(t,y(:,1))
-stairs(t,u(:,2))
-stairs(t,stpt(:,1))
-legend('y1', 'u2', 'stpt1')
+xlabel('t [s]')
+ylabel('T_{out} [\circC]')
+stairs(t,y(:,2)+T_out)
+stairs(t,stpt(:,2)+T_out)
+legend('Wartość wyjściowa', 'Wartość zadana','Location','southeast')
+if SAVE_FIG; exportgraphics(gcf, 'y2u1.pdf'); end
+
+figure('Position', fig_position);
+subplot(211)
+xlabel('t [s]')
+ylabel('F_Cin [cm^3/s]')
+hold on
+stairs(t,u(:,2)+F_cin)
+legend('Wartość sterowania','Location','southeast')
+
+subplot(212)
+xlabel('t [s]')
+ylabel('h [cm]')
+hold on
+stairs(t,y(:,1)+h)
+stairs(t,stpt(:,1)+h)
+legend('Wartość wyjściowa', 'Wartość zadana','Location','southeast')
+if SAVE_FIG; exportgraphics(gcf, 'y1u2.pdf'); end
 
 
 % [y_new(end),~,~] = lsim(model_lin_dysk(1,1),u(end),t_new(end),x(end,:));
@@ -150,6 +171,25 @@ D12 = stabilizeTf(D12)
 % pole(D12)
 % zero(D12)
 
+% NOWE
+Gz12 = Gz(1,2);
+Gz12.InputDelay = 0;
+Gz12.OutputDelay = 0;
+D11 = -Gz(1,1) / Gz12;
+D11 = stabilizeTf(D11);
+
+Gz21 = Gz(2,1);
+Gz22 = Gz(2,2);
+Gz22.InputDelay = Gz22.InputDelay - Gz21.InputDelay;
+Gz22.OutputDelay = Gz22.OutputDelay - Gz21.OutputDelay;
+Gz21.InputDelay = 0;
+Gz21.OutputDelay = 0;
+D22 = -Gz22 / Gz21;
+D22 = stabilizeTf(D22);
+
+D12 = D22;
+D21 = D11;
+
 % classPID(K, Ti, Kd, Td, Tp, Hlim, Llim, Dir, AutoMan, ManVal) 
 pid_y2u1 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 pid_y1u2 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
@@ -161,8 +201,8 @@ len = len(1);
 u = zeros(len,2);
 
 % reTune(obj, K, Ti, Kd, Td)
-pid_y2u1.reTune(0.5, 500, 0, 0.5);
-pid_y1u2.reTune(5, 400, 0, 10); % niezle
+pid_y2u1.reTune(0.5, 180, 0, 50);
+pid_y1u2.reTune(2.5, 150, 0, 5); % niezle
 
 stpt = zeros(len,2);
 stpt(20:end,1) = 10;
@@ -182,17 +222,51 @@ for i = lazy_start+1:len
     y = lsim(Gz, [u1, u2], t(1:i));
 end
 
-figure;
+% figure('Position', fig_position);
+% subplot(211)
+% hold on
+% stairs(t,y(:,2))
+% stairs(t,u1)
+% stairs(t,stpt(:,2))
+% legend('y2', 'u1', 'stpt2')
+% 
+% subplot(212)
+% hold on
+% stairs(t,y(:,1))
+% stairs(t,u2)
+% stairs(t,stpt(:,1))
+% legend('y1', 'u2', 'stpt1')
+
+figure('Position', fig_position);
 subplot(211)
+xlabel('t [s]')
+ylabel('F_H [cm^3/s]')
 hold on
-stairs(t,y(:,2))
-stairs(t,u1)
-stairs(t,stpt(:,2))
-legend('y2', 'u1', 'stpt2')
+stairs(t,u1+F_h)
+legend('Wartość sterowania','Location','southeast')
 
 subplot(212)
 hold on
-stairs(t,y(:,1))
-stairs(t,u2)
-stairs(t,stpt(:,1))
-legend('y1', 'u2', 'stpt1')
+xlabel('t [s]')
+ylabel('T_{out} [\circC]')
+stairs(t,y(:,2)+T_out)
+stairs(t,stpt(:,2)+T_out)
+legend('Wartość wyjściowa', 'Wartość zadana','Location','southeast')
+if SAVE_FIG; exportgraphics(gcf, 'y2u1_odsprz.pdf'); end
+
+figure('Position', fig_position);
+subplot(211)
+xlabel('t [s]')
+ylabel('F_Cin [cm^3/s]')
+hold on
+stairs(t,u2+F_cin)
+legend('Wartość sterowania','Location','southeast')
+
+subplot(212)
+xlabel('t [s]')
+ylabel('h [cm]')
+hold on
+stairs(t,y(:,1)+h)
+stairs(t,stpt(:,1)+h)
+legend('Wartość wyjściowa', 'Wartość zadana','Location','southeast')
+if SAVE_FIG exportgraphics(gcf, 'y1u2_odsprz.pdf'); end
