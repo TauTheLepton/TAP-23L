@@ -51,6 +51,12 @@ Gs = gs(model_lin_ciag);
 model_lin_dysk = modelLinDisc(model_lin_ciag,Tp);
 Gz = gz(Gs,Tp);
 
+F_d = F_d + 5;
+model_lin_ciag2 = modelLinCont();
+Gs2 = gs(model_lin_ciag2);
+model_lin_dysk2 = modelLinDisc(model_lin_ciag2,Tp);
+Gz2 = gz(Gs2,Tp);
+
 ks = tfLimit(Gs,2,2,0)
 kz = tfLimit(Gz,2,2,1)
 
@@ -84,6 +90,10 @@ lazy_start = 2;  % potrzebne do ustawienia wyjść procesu potrzebnych do PIDa
 y = lsim(Gz, u(1:lazy_start,:), t(1:lazy_start));
 
 for i = lazy_start+1:len
+    if i == 150
+        Gz = Gz2;
+        y2 = y;
+    end
 %     u0 = pid_y2u1.calc(y(end), stpt)
 %     u = [u; u0];
 %     t = [t; t(end)+Tp];
@@ -110,14 +120,15 @@ hold on
 xlabel('t [s]')
 ylabel('T_{out} [\circC]')
 stairs(t,y(:,2)+T_out)
+stairs(t(1:149),y2(:,2)+T_out)
 stairs(t,stpt(:,2)+T_out)
 legend('Wartość wyjściowa', 'Wartość zadana','Location','southeast')
-if SAVE_FIG; exportgraphics(gcf, 'y2u1.pdf'); end
+if SAVE_FIG; saveas(gcf, 'y2u1.svg'); end
 
 figure('Position', fig_position);
 subplot(211)
 xlabel('t [s]')
-ylabel('F_Cin [cm^3/s]')
+ylabel('F_{Cin} [cm^3/s]')
 hold on
 stairs(t,u(:,2)+F_cin)
 legend('Wartość sterowania','Location','southeast')
@@ -129,7 +140,7 @@ hold on
 stairs(t,y(:,1)+h)
 stairs(t,stpt(:,1)+h)
 legend('Wartość wyjściowa', 'Wartość zadana','Location','southeast')
-if SAVE_FIG; exportgraphics(gcf, 'y1u2.pdf'); end
+if SAVE_FIG; saveas(gcf, 'y1u2.svg'); end
 
 
 % [y_new(end),~,~] = lsim(model_lin_dysk(1,1),u(end),t_new(end),x(end,:));
@@ -252,12 +263,12 @@ ylabel('T_{out} [\circC]')
 stairs(t,y(:,2)+T_out)
 stairs(t,stpt(:,2)+T_out)
 legend('Wartość wyjściowa', 'Wartość zadana','Location','southeast')
-if SAVE_FIG; exportgraphics(gcf, 'y2u1_odsprz.pdf'); end
+if SAVE_FIG; saveas(gcf, 'y2u1_odsprz.svg'); end
 
 figure('Position', fig_position);
 subplot(211)
 xlabel('t [s]')
-ylabel('F_Cin [cm^3/s]')
+ylabel('F_{Cin} [cm^3/s]')
 hold on
 stairs(t,u2+F_cin)
 legend('Wartość sterowania','Location','southeast')
@@ -269,4 +280,4 @@ hold on
 stairs(t,y(:,1)+h)
 stairs(t,stpt(:,1)+h)
 legend('Wartość wyjściowa', 'Wartość zadana','Location','southeast')
-if SAVE_FIG exportgraphics(gcf, 'y1u2_odsprz.pdf'); end
+if SAVE_FIG saveas(gcf, 'y1u2_odsprz.svg'); end
