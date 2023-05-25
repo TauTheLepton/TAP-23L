@@ -16,3 +16,14 @@
 ### Część a)
 
 #### TODO
+- [x] PID dwupętlowy bez odsprzęganiem
+- [x] PID dwupętlowy z odsprzęganiem
+- [x] nastroić PIDy
+
+### Część b)
+- [ ] analityczny DMC
+- [ ] porównanie analitycznego DMC z PIDem z a)
+
+### Część c)
+- [ ] numeryczny DMC
+- [ ] porównanie numerycznego DMC z PIDem z a)
