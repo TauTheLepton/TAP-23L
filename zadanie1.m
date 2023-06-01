@@ -233,14 +233,14 @@ step(Gs(2,2)); step(Gz(2,2));
 %% rozwiązanie równań różniczkowych dla dyskretnego
 u = [F_h+10; F_cin+0];
 [tL1, xL1] = ode23(@(t,x) model_liniowy_ode(t,x,u), [t0 tk], [h_start; T_out_start], options);
-conf = RespConfig('Amplitude', [10, 0], 'Delay', 0);%'InputOffset', [F_h, F_cin], 'InitialState', [h_start, T_out_start]);
+conf = RespConfig('Amplitude', [1, 0], 'Delay', 0);%'InputOffset', [F_h, F_cin], 'InitialState', [h_start, T_out_start]);
 [xd1, td1] = step(model_lin_dysk, tk, conf);
 xd1(:, 1, 1) = xd1(:, 1, 1) + h;
 xd1(:, 2, 1) = xd1(:, 2, 1) + T_out;
 
 u = [F_h+0; F_cin+10];
 [tL2, xL2] = ode23(@(t,x) model_liniowy_ode(t,x,u), [t0 tk], [h_start; T_out_start], options);
-conf = RespConfig('Amplitude', [0, 10], 'Delay', Tau_c);%'InputOffset', [F_h, F_cin], 'InitialState', [h_start, T_out_start]);
+conf = RespConfig('Amplitude', [0, 1], 'Delay', Tau_c);%'InputOffset', [F_h, F_cin], 'InitialState', [h_start, T_out_start]);
 [xd2, td2] = step(model_lin_dysk, tk, conf);
 xd2(:, 1, 2) = xd2(:, 1, 2) + h;
 xd2(:, 2, 2) = xd2(:, 2, 2) + T_out;
