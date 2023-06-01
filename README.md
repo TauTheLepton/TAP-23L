@@ -21,7 +21,7 @@
 - [x] nastroić PIDy
 
 ### Część b)
-- [ ] analityczny DMC
+- [x] analityczny DMC
 - [ ] porównanie analitycznego DMC z PIDem z a)
 
 ### Część c)
