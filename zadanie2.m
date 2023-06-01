@@ -400,6 +400,11 @@ for i = lazy_start+1:len
     y = lsim(Gz, [u1, u2], t(1:i));
 end
 
+%% DMC analityczny
+
+
+
+%% plots
 % figure('Position', fig_position);
 % subplot(211)
 % hold on
