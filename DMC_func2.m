@@ -1,14 +1,55 @@
-close all;
+function E_abs = DMC_func2(X)
+%% punkt pracy (warunki początkowe)
+global T_c T_h T_d F_c F_h F_d F_cin Tau_c Tau h T T_out
+T_c = 20;
+T_h = 72;
+T_d = 30;
+F_c = 31;
+F_cin = F_c;
+F_h = 25;
+F_d = 15;
+Tau_c = 100;
+Tau = 120;
 h = 15.56;
 T = 40.42;
 T_out = T;
+% ZMIENNYCH GLOBALNYCH NIE ZMIENIAMY
+
+%T_out(t) = T(t - Tau);
+%F_c(t) = F_cin(t - Tau_c);
+
+%% okres próbkowania
+Tp = 10;
+t0 = 0;
+tk = 1000;
+
+h = 15.56;
+T = 40.42;
+T_out = T;
+
+%% Modele
+model_lin_ciag = modelLinCont();
+Gs = gs(model_lin_ciag);
+model_lin_dysk = modelLinDisc(model_lin_ciag,Tp);
+Gz = gz(Gs,Tp);
+
+conf = RespConfig('Amplitude', [1, 0], 'Delay', 0);%'InputOffset', [F_h, F_cin], 'InitialState', [h_start, T_out_start]);
+[xd1, ~] = step(model_lin_dysk, tk, conf);
+xd1(:, 1, 1) = xd1(:, 1, 1) + h;
+xd1(:, 2, 1) = xd1(:, 2, 1) + T_out;
+
+conf = RespConfig('Amplitude', [0, 1], 'Delay', Tau_c);%'InputOffset', [F_h, F_cin], 'InitialState', [h_start, T_out_start]);
+[xd2, ~] = step(model_lin_dysk, tk, conf);
+xd2(:, 1, 2) = xd2(:, 1, 2) + h;
+xd2(:, 2, 2) = xd2(:, 2, 2) + T_out;
+
 %% set parameters
 use_plot = true; % for optimalization with algorithm should be 'false'
 % dmc params
-N = 84;
-Nu = 14;
-D = 4;
-lambda = 38;
+N = X(1);
+Nu = X(2);
+D = X(4);
+lambda = X(3);
 psi = 1;
 umax = 100;
 umin = 0;
@@ -100,32 +141,6 @@ end
 error = [0; 0];
 error(1) = err(:,1)' * err(:,1);
 error(2) = err(:,2)'*err(:,2);
-%% dostrajanie algorytmem genetycznym
-% IntCon=[1 2 3 4];
-% options = gaoptimset('StallGenLimit', 10, 'PopulationSize', 100);
-% [X] = ga(@DMC_func2,4,[],[],[],[],[21,1,0,3],[100,20,100,100],[],IntCon,options);
-% fprintf('\nN=%f; Nu=%f; Lambda=%f; D=%f;\n', X)
-% plot
-if use_plot
-    subplot(4, 1, 1)
-    hold on
-    stairs(t,yzad(:,1)+h)
-    stairs(t,y(:,1)+h)
-    hold off
-    legend('hzad', 'h')
-
-    subplot(4, 1, 2)
-    stairs(t,u(:,1))
-    legend('Fh')
-
-    subplot(4, 1, 3)
-    hold on
-    stairs(t,yzad(:,2)+T_out)
-    stairs(t,y(:,2)+T_out)
-    hold off
-    legend('Tzad', 'T')
-
-    subplot(4, 1, 4)
-    stairs(t,u(:,2))
-    legend('Fc')
+E_abs = error(1) + error(2);
+%% plot
 end

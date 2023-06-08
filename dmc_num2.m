@@ -7,14 +7,14 @@ T_out = T;
 %% Set parameters
 use_plot = true; % For optimization with the algorithm, set to 'false'
 % DMC params
-N = 3;
-Nu = 2;
-D = 100;
-lambda = 6;
+N = 84;
+Nu = 14;
+D = 4;
+lambda = 38;
 psi = 1;
 umax = 150;
 umin = -50;
-ymin = 0;
+ymin = -50;
 ymax = 100;
 ymin2 = [ymin, ymin];
 ymax2 = [ymax, ymax];
@@ -23,13 +23,13 @@ umin2 = [umin, umin];
 
 % Goal values
 Tp = 10;
-t = (1:Tp:Tp*1000)';
+t = (1:Tp:Tp*300)';
 len = size(t, 1);
 err = zeros(len, 2);
 dy = zeros(len, 2);
 yzad = zeros(len, 2);
-yzad(len/4:end, 1) = 35;
-yzad(len/2:end, 2) = 20;
+yzad(len/15:end, 1) = 10;
+yzad(len/2:end, 2) = 5;
 
 %% Read s and d
 shFh = xd1(1:D, 1, 1); % Launch zadanie1.m for xd1 and xd2
@@ -139,23 +139,23 @@ error(2) = err(:, 2)' * err(:, 2);
 if use_plot
     subplot(4, 1, 1)
     hold on
-    plot(yzad(:, 1) + h)
-    plot(y(:, 1) + h)
+    stairs(t,yzad(:, 1) + h)
+    stairs(t,y(:, 1) + h)
     hold off
     legend('hzad', 'h')
 
     subplot(4, 1, 2)
-    plot(u(:, 1))
+    stairs(t,u(:, 1))
     legend('Fh')
 
     subplot(4, 1, 3)
     hold on
-    plot(yzad(:, 2) + T_out)
-    plot(y(:, 2) + T_out)
+    stairs(t,yzad(:, 2) + T_out)
+    stairs(t,y(:, 2) + T_out)
     hold off
     legend('Tzad', 'T')
 
     subplot(4, 1, 4)
-    plot(u(:, 2))
+    stairs(t,u(:, 2))
     legend('Fc')
 end
