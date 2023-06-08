@@ -5,13 +5,13 @@ T_out = T;
 %% set parameters
 use_plot = true; % for optimalization with algorithm should be 'false'
 % dmc params
-N = 17;
-Nu = 15;
+N = 3;
+Nu = 1;
 D = 100;
-lambda = 70;
+lambda = 6;
 psi = 1;
-umax = 50;
-umin = 0;
+umax = 150;
+umin = -50;
 % goal values
 Tp = 10;
 t = 1:Tp:Tp*1000;
