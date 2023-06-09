@@ -68,7 +68,7 @@ rga_dysk = RGA(kz);
 pid_y2u1 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 pid_y1u2 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 
-t = 0:Tp:Tp*300;
+t = 0:Tp:Tp*1000;
 t = t';
 len = size(t);
 len = len(1);
@@ -219,7 +219,7 @@ D21 = D11;
 pid_y2u1 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 pid_y1u2 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 
-t = 0:Tp:Tp*300;
+t = 0:Tp:Tp*1000;
 t = t';
 len = size(t);
 len = len(1);
@@ -356,7 +356,7 @@ D21 = D11;
 pid_y2u1 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 pid_y1u2 = classPID(4, 10, 1, 100, 10, 100, -100, 1, 1, 0);
 
-t = 0:Tp:Tp*300;
+t = 0:Tp:Tp*1000;
 t = t';
 len = size(t);
 len = len(1);
@@ -380,17 +380,19 @@ pid_y2u1.reTune(0.5, 180, 0, 50);
 pid_y1u2.reTune(2.5, 150, 0, 5); % niezle
 
 stpt = zeros(len,2);
-stpt(20:end,1) = 10;
-stpt(40:end,2) = 5;
+% stpt(20:end,1) = 10;
+% stpt(40:end,2) = 5;
+stpt(len/4:end,1) = 35;
+stpt(len/2:end,2) = 20;
 
 lazy_start = 2;  % potrzebne do ustawienia wyjść procesu potrzebnych do PIDa
 
 y = lsim(Gz, u(1:lazy_start,:), t(1:lazy_start));
 
 for i = lazy_start+1:len
-    if i == 150
-        Gz = Gz2;
-    end
+    % if i == 150
+    %     Gz = Gz2;
+    % end
     % jestesmy w czasie 'i-1'
     ur(i,1) = pid_y2u1.calc(y(end,2), stpt(i,2));
     ur(i,2) = pid_y1u2.calc(y(end,1), stpt(i,1));
@@ -405,53 +407,39 @@ end
 
 
 %% plots
-% figure('Position', fig_position);
-% subplot(211)
-% hold on
-% stairs(t,y(:,2))
-% stairs(t,u1)
-% stairs(t,stpt(:,2))
-% legend('y2', 'u1', 'stpt2')
-% 
-% subplot(212)
-% hold on
-% stairs(t,y(:,1))
-% stairs(t,u2)
-% stairs(t,stpt(:,1))
-% legend('y1', 'u2', 'stpt1')
 
-figure('Position', fig_position);
-subplot(211)
+%figure('Position', fig_position);
+subplot(4, 1, 4)
 xlabel('t [s]')
 ylabel('F_H [cm^3/s]')
-hold on
 stairs(t,u1+F_h)
 legend('Wartość sterowania','Location','southeast')
 
-subplot(212)
+subplot(4, 1, 3)
 hold on
 xlabel('t [s]')
 ylabel('T_{out} [\circC]')
 stairs(t,y(:,2)+T_out)
 stairs(t,stpt(:,2)+T_out)
-stairs(t, F_d_t+25, '--')
+% stairs(t, F_d_t+25, '--')
+hold off
 legend('Wartość wyjściowa', 'Wartość zadana','Zakłócenie' ,'Location','southeast')
-if SAVE_FIG; saveas(gcf, 'y2u1_odsprz_zak.png'); end
+%if SAVE_FIG; saveas(gcf, 'y2u1_odsprz_zak.png'); end
 
-figure('Position', fig_position);
-subplot(211)
+%figure('Position', fig_position);
+subplot(4, 1, 2)
 xlabel('t [s]')
 ylabel('F_{Cin} [cm^3/s]')
-hold on
 stairs(t,u2+F_cin)
 legend('Wartość sterowania','Location','southeast')
 
-subplot(212)
+subplot(4, 1, 1)
 xlabel('t [s]')
 ylabel('h [cm]')
 hold on
 stairs(t,y(:,1)+h)
 stairs(t,stpt(:,1)+h)
-stairs(t, F_d_t, '--')
+% stairs(t, F_d_t, '--')
+hold off
 legend('Wartość wyjściowa', 'Wartość zadana','Zakłócenie' ,'Location','southeast')
 if SAVE_FIG saveas(gcf, 'y1u2_odsprz_zak.png'); end
