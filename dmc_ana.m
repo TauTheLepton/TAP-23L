@@ -5,22 +5,25 @@ T_out = T;
 %% set parameters
 use_plot = true; % for optimalization with algorithm should be 'false'
 % dmc params
-N = 84;
-Nu = 14;
-D = 4;
-lambda = 38;
+N = 17;
+Nu = 15;
+D = 100;
+lambda = 70;
 psi = 1;
 umax = 100;
 umin = 0;
 % goal values
 Tp = 10;
-t = 1:Tp:Tp*300;
+%t = 1:Tp:Tp*300;
+t = 1:Tp:Tp*1000;
 t = t';
 len = size(t, 1);
 err = zeros(len, 2);
 yzad = zeros(len, 2);
-yzad(len/15:end,1) = 10;
-yzad(len/2:end,2) = 5;
+yzad(len/4:end,1) = 35;
+yzad(len/2:end,2) = 20;
+% yzad(len/15:end,1) = 10;
+% yzad(len/2:end,2) = 5;
 
 %% read s and d
 shFh = xd1(1:D,1,1); % launch zadanie1.m for xd1 and xd2
